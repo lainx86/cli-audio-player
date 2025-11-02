@@ -11,7 +11,7 @@ Gak ada UI, gak ada warna, cuma suara.
 - Memindai folder `music/` untuk file `.wav`
 - Menampilkan daftar lagu
 - Memutar lagu berdasarkan pilihan user
-- Dibuat untuk belajar, bukan untuk memanjakan
+- Dibuat untuk belajar
 
 ## Requirements
 
