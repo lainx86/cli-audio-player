@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <string>
 #include <mutex>
+#include <limits>
+#include <memory>
 
 namespace fs = std::filesystem;
 
@@ -144,8 +146,15 @@ void displaySongList(const std::vector<fs::path>& songs) {
     std::cout << "╚════════════════════════════════════════╝\n";
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     std::string folderPath = "music";
+    if (argc > 1) {
+        folderPath = argv[1];
+    } else {
+        std::cout << "Usage: " << argv[0] << " <path_to_music_folder>" << std::endl;
+        std::cout << "Falling back to default 'music' directory." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
     std::vector<fs::path> laguList;
 
     // Scan folder
@@ -178,6 +187,7 @@ int main() {
     std::cout << "➤ ";
     int currentTrack;
     std::cin >> currentTrack;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the input buffer
 
     if (currentTrack < 1 || currentTrack > laguList.size()) {
         clearScreen();
@@ -194,7 +204,7 @@ int main() {
     std::atomic<bool> paused(false);
     std::string playbackMode = "Normal";
     sf::Time jumpDuration = sf::seconds(10);
-    MarqueeText* marquee = nullptr;
+    std::unique_ptr<MarqueeText> marquee;
 
     auto loadAndPlay = [&](int trackIndex) -> bool {
         // Handle wrap-around for playlist
@@ -206,8 +216,7 @@ int main() {
 
         if (music.openFromFile(laguList[trackIndex].string())) {
             currentTrack = trackIndex;
-            if (marquee) delete marquee;
-            marquee = new MarqueeText(laguList[currentTrack].filename().string(), 26);
+            marquee = std::make_unique<MarqueeText>(laguList[currentTrack].filename().string(), 26);
             music.play();
             return true;
         }
@@ -301,7 +310,6 @@ int main() {
 
     stop = true;
     inputThread.join();
-    if (marquee) delete marquee;
 
     return 0;
 }
